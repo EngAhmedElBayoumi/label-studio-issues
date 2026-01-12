@@ -37,6 +37,7 @@
             border-left: 1px solid var(--border);
             padding: 20px;
             overflow-y: auto;
+            z-index: 100;
         }
 
         .main-content {
@@ -151,7 +152,13 @@
             font-weight: bold;
         }
 
-        .highlight { color: var(--danger); font-weight: bold; }
+        .price-tag {
+            font-size: 2em;
+            color: var(--success);
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -163,8 +170,8 @@
     <div class="nav-item" onclick="showSection('performance')">تحليل الأداء والضغط</div>
     <div class="nav-item" onclick="showSection('roles')">نظام الأدوار والصلاحيات</div>
     <div class="nav-item" onclick="showSection('estimation')">الوقت والتكلفة</div>
-    <!-- <div class="nav-item" onclick="showSection('operation')">دليل التشغيل الفني</div>
-    <div class="nav-item" onclick="showSection('modification')">خارطة طريق التعديل</div> -->
+    <div class="nav-item" onclick="showSection('operation')">دليل التشغيل الفني</div>
+    <div class="nav-item" onclick="showSection('modification')">خارطة طريق التعديل</div>
 </div>
 
 <div class="main-content">
@@ -214,7 +221,7 @@
                 <div class="code-label">settings/base.py</div>
                 ALLOWED_HOSTS = get_env_list('ALLOWED_HOSTS', default=['*'])
             </div>
-            <p><strong>الخطر:</strong> يسمح بهجمات <strong>Host Header Injection</strong>. المهاجم يمكنه خداع السيرفر لإنشاء روابط خبيثة (مثل روابط استعادة كلمة المرور) ترسل لبريد المستخدم ولكنها تشير لسيرفر المهاجم.</p>
+            <p><strong>الخطر:</strong> يسمح بهجمات <strong>Host Header Injection</strong>.</p>
         </div>
 
         <div class="alert alert-danger">
@@ -226,27 +233,17 @@
                 &nbsp;&nbsp;def process_view(self, request, callback, *args, **kwargs):<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;setattr(request, '_dont_enforce_csrf_checks', True)
             </div>
-            <p><strong>الخطر:</strong> هذا يفتح الباب لهجمات <strong>Cross-Site Request Forgery</strong>. إذا قام المستخدم بزيارة موقع خبيث وهو مسجل دخول في Label Studio، يمكن للموقع الخبيث إرسال طلبات (مثل حذف بيانات) دون علم المستخدم.</p>
-        </div>
-
-        <div class="alert alert-warning">
-            <h3>3. ثغرة CORS (Cross-Origin Resource Sharing)</h3>
-            <p>الإعداد الافتراضي يسمح للجميع:</p>
-            <div class="code-block">
-                <div class="code-label">settings/base.py</div>
-                CORS_ALLOW_ALL_ORIGINS = get_bool_env('CORS_ALLOW_ALL_ORIGINS', True)
-            </div>
-            <p><strong>الخطر:</strong> يسمح لأي موقع على الإنترنت بقراءة بيانات الـ API الخاصة بك إذا كان المستخدم مسجلاً للدخول.</p>
+            <p><strong>الخطر:</strong> هذا يفتح الباب لهجمات <strong>Cross-Site Request Forgery</strong>.</p>
         </div>
 
         <div class="alert alert-danger">
-            <h3>4. حماية SSRF المعطلة</h3>
+            <h3>3. حماية SSRF المعطلة</h3>
             <p>الحماية من طلبات السيرفر المزيفة معطلة افتراضياً:</p>
             <div class="code-block">
                 <div class="code-label">settings/base.py</div>
                 SSRF_PROTECTION_ENABLED = get_bool_env('SSRF_PROTECTION_ENABLED', False)
             </div>
-            <p><strong>الخطر:</strong> يمكن للمهاجم استخدام خاصية "Import from URL" لجعل السيرفر يهاجم نفسه أو يكتشف خدمات داخلية في شبكتك الخاصة.</p>
+            <p><strong>الخطر:</strong> يمكن للمهاجم استخدام خاصية "Import from URL" لمهاجمة السيرفر داخلياً.</p>
         </div>
     </div>
 
@@ -257,32 +254,20 @@
 
         <div class="step-box">
             <h3>أ. مشكلة الـ JSON Serialization</h3>
-            <p>يتم تخزين التحديدات في حقل <code>JSONField</code>. عند طلب صورة تحتوي على 500 نقش، يقوم Django بتحويل هذا الـ JSON الضخم إلى Object في كل مرة. هذا يستهلك الـ CPU بشكل هائل.</p>
+            <p>يتم تخزين التحديدات في حقل <code>JSONField</code>. عند طلب صورة تحتوي على مئات النقوش، يستهلك الـ CPU وقتاً طويلاً لتحويل البيانات.</p>
         </div>
 
         <div class="step-box">
-            <h3>ب. مشكلة قاعدة البيانات (SQLite vs PostgreSQL)</h3>
-            <p>إذا كان العميل يستخدم SQLite، فإن أي عملية كتابة (Save Label) تقوم بقفل قاعدة البيانات بالكامل (Database Lock)، مما يمنع المستخدمين الآخرين من القراءة أو الكتابة حتى تنتهي العملية.</p>
-        </div>
-
-        <div class="step-box">
-            <h3>ج. رندر الواجهة الأمامية (Frontend Rendering)</h3>
-            <p>واجهة React تستخدم <code>Canvas</code> أو <code>SVG</code> لرسم التحديدات. مع زيادة عدد النقوش، تزداد العمليات الحسابية في المتصفح، مما يسبب "تهنيج" في جهاز المستخدم.</p>
+            <h3>ب. مشكلة قاعدة البيانات</h3>
+            <p>استخدام SQLite يسبب <strong>Database Lock</strong> عند تعدد المستخدمين، مما يمنع العمل المتزامن.</p>
         </div>
     </div>
 
     <!-- Section: Roles -->
     <div id="roles" class="section">
         <h1>نظام الأدوار والصلاحيات (RBAC)</h1>
-        <p>النسخة المجتمعية تفتقر لنظام أدوار حقيقي. إليك التحليل الفني لكيفية إضافته:</p>
+        <p>النسخة المجتمعية تفتقر لنظام أدوار حقيقي. إليك المقترح الفني:</p>
 
-        <h3>الموديلات المتأثرة:</h3>
-        <ul>
-            <li><code>User Model</code>: يحتاج لحقل <code>role</code>.</li>
-            <li><code>ProjectMember Model</code>: يحتاج لتحديد صلاحيات العضو داخل المشروع.</li>
-        </ul>
-
-        <h3>الأدوار المقترحة للعميل:</h3>
         <table>
             <tr>
                 <th>الدور</th>
@@ -290,18 +275,15 @@
             </tr>
             <tr>
                 <td>مدير (Admin)</td>
-                <td>كامل الصلاحيات (إنشاء مشاريع، حذف، إدارة مستخدمين).</td>
-            </tr>
-            <tr>
-                <td>مُراجع (Reviewer)</td>
-                <td>رؤية جميع الصور وتعديل التحديدات، لكن لا يمكنه حذف المشروع.</td>
+                <td>كامل الصلاحيات (إدارة المشاريع والمستخدمين).</td>
             </tr>
             <tr>
                 <td>مُصنِّف (Annotator)</td>
-                <td>رؤية الصور المخصصة له فقط، ولا يمكنه رؤية عمل الآخرين.</td>
+                <td>رؤية الصور المخصصة له فقط (عزل البيانات).</td>
             </tr>
         </table>
     </div>
+
     <!-- Section: Estimation -->
     <div id="estimation" class="section">
         <h1>تقدير الوقت والتكلفة (Estimation)</h1>
@@ -351,37 +333,17 @@
         </div>
     </div>
 
-
     <!-- Section: Operation -->
-    <!-- <div id="operation" class="section">
+    <div id="operation" class="section">
         <h1>دليل التشغيل الفني (Operation Guide)</h1>
-        <p>لتشغيل المشروع من الكود المصدري لضمان القدرة على التعديل:</p>
-
         <div class="step-box">
-            <span class="step-number">1</span>
-            <strong>إعداد البيئة:</strong>
-            <pre>python3 -m venv env && source env/bin/activate</pre>
+            <pre>python3 -m venv env && source env/bin/activate<br>pip install -e .<br>python label_studio/manage.py migrate<br>python label_studio/manage.py runserver 8080</pre>
         </div>
+    </div>
 
-        <div class="step-box">
-            <span class="step-number">2</span>
-            <strong>تثبيت الاعتماديات:</strong>
-            <pre>pip install -e .</pre>
-        </div>
-
-        <div class="step-box">
-            <span class="step-number">3</span>
-            <strong>تشغيل قاعدة البيانات (PostgreSQL):</strong>
-            <p>يجب ضبط متغيرات البيئة في ملف <code>.env</code>:</p>
-            <pre>DJANGO_DB=default<br>POSTGRE_NAME=labelstudio<br>POSTGRE_USER=postgres<br>POSTGRE_PASSWORD=password</pre>
-        </div>
-    </div> -->
-
-    <!-- Section: Modification
+    <!-- Section: Modification -->
     <div id="modification" class="section">
         <h1>خارطة طريق التعديل (Modification Roadmap)</h1>
-        <p>أين تضع يدك في الكود لتنفيذ طلبات العميل؟</p>
-
         <table>
             <tr>
                 <th>المطلب</th>
@@ -391,46 +353,23 @@
             <tr>
                 <td>إضافة حقل الدور</td>
                 <td class="file-path">label_studio/users/models.py</td>
-                <td>إضافة <code>role = models.CharField(choices=ROLE_CHOICES)</code></td>
+                <td>إضافة <code>role = models.CharField(...)</code></td>
             </tr>
             <tr>
                 <td>عزل الصور</td>
                 <td class="file-path">label_studio/tasks/models.py</td>
-                <td>تعديل <code>TaskManager</code> لفلترة المهام بناءً على <code>request.user</code>.</td>
-            </tr>
-            <tr>
-                <td>إصلاح الحماية</td>
-                <td class="file-path">label_studio/core/settings/base.py</td>
-                <td>تغيير <code>ALLOWED_HOSTS</code> و <code>SSRF_PROTECTION_ENABLED</code>.</td>
-            </tr>
-            <tr>
-                <td>تحسين الأداء</td>
-                <td class="file-path">label_studio/tasks/api.py</td>
-                <td>استخدام <code>select_related</code> و <code>prefetch_related</code> في الـ Queryset.</td>
+                <td>تعديل <code>TaskManager</code> للفلترة.</td>
             </tr>
         </table>
-    </div> -->
+    </div>
 </div>
 
 <script>
     function showSection(sectionId) {
-        // Hide all sections
         const sections = document.querySelectorAll('.section');
         sections.forEach(s => s.classList.remove('active'));
-        
-        // Show target section
         document.getElementById(sectionId).classList.add('active');
-        
-        // Update nav items
         const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.classList.remove('active');
-            if (item.innerText.includes(document.getElementById(sectionId).querySelector('h1').innerText.split(' ')[0])) {
-                item.classList.add('active');
-            }
-        });
-        
-        // Special case for nav item text matching
         navItems.forEach(item => item.classList.remove('active'));
         const activeItem = Array.from(navItems).find(item => item.getAttribute('onclick').includes(sectionId));
         if (activeItem) activeItem.classList.add('active');
