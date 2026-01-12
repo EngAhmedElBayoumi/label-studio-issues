@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقرير الفني الشامل: تحليل مشروع Label Studio</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap');
+        
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --danger: #d93025;
+            --warning: #f9ab00;
+            --success: #1e8e3e;
+            --bg-light: #f8f9fa;
+            --text-main: #202124;
+            --text-muted: #5f6368;
+            --border: #dadce0;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+        }
+
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: white;
+            position: fixed;
+            right: 0;
+            top: 0;
+            border-left: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            margin-right: 300px;
+            padding: 40px;
+            max-width: 1000px;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: 0.3s;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .nav-item:hover { background: var(--bg-light); color: var(--primary); }
+        .nav-item.active { background: #e8f0fe; color: var(--primary); font-weight: 700; }
+
+        .section {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .section.active { display: block; }
+
+        h1, h2, h3 { color: var(--primary-dark); }
+        h1 { border-bottom: 4px solid var(--primary); padding-bottom: 15px; margin-bottom: 30px; }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .badge-danger { background: #fce8e6; color: var(--danger); }
+        .badge-warning { background: #fef7e0; color: var(--warning); }
+        .badge-success { background: #e6f4ea; color: var(--success); }
+
+        .code-block {
+            background: #202124;
+            color: #e8eaed;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            direction: ltr;
+            text-align: left;
+            overflow-x: auto;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .code-label {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--primary);
+            color: white;
+            padding: 2px 10px;
+            font-size: 0.75em;
+            border-bottom-left-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+        }
+
+        th, td {
+            padding: 15px;
+            border: 1px solid var(--border);
+            text-align: right;
+        }
+
+        th { background: var(--bg-light); color: var(--primary-dark); }
+
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-right: 6px solid;
+        }
+        .alert-danger { background: #fce8e6; border-color: var(--danger); color: #a50e0e; }
+        .alert-warning { background: #fef7e0; border-color: var(--warning); color: #b06000; }
+        .alert-info { background: #e8f0fe; border-color: var(--primary); color: #174ea6; }
+
+        .step-box {
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #fff;
+        }
+        .step-number {
+            background: var(--primary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-left: 15px;
+            font-weight: bold;
+        }
+
+        .highlight { color: var(--danger); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2 style="text-align: center; color: var(--primary);">Label Studio Analysis</h2>
+    <div class="nav-item active" onclick="showSection('intro')">مقدمة المشروع</div>
+    <div class="nav-item" onclick="showSection('security')">التحليل الأمني العميق</div>
+    <div class="nav-item" onclick="showSection('performance')">تحليل الأداء والضغط</div>
+    <div class="nav-item" onclick="showSection('roles')">نظام الأدوار والصلاحيات</div>
+    <!-- <div class="nav-item" onclick="showSection('operation')">دليل التشغيل الفني</div>
+    <div class="nav-item" onclick="showSection('modification')">خارطة طريق التعديل</div> -->
+</div>
+
+<div class="main-content">
+    <!-- Section: Intro -->
+    <div id="intro" class="section active">
+        <h1>مقدمة المشروع وتحليل الهيكلة</h1>
+        <p>مشروع <strong>Label Studio</strong> هو منصة مفتوحة المصدر لتصنيف البيانات. يعتمد المشروع على تقنيات حديثة ولكنه يواجه تحديات عند استخدامه في بيئات إنتاجية ضخمة أو مع بيانات حساسة.</p>
+        
+        <h3>المكونات الرئيسية:</h3>
+        <table>
+            <tr>
+                <th>المكون</th>
+                <th>التقنية المستخدمة</th>
+                <th>الوظيفة</th>
+            </tr>
+            <tr>
+                <td>الواجهة الخلفية (Backend)</td>
+                <td>Django / Python</td>
+                <td>إدارة الـ API، قاعدة البيانات، والمستخدمين.</td>
+            </tr>
+            <tr>
+                <td>الواجهة الأمامية (Frontend)</td>
+                <td>React / TypeScript</td>
+                <td>واجهة التصنيف التفاعلية وإدارة المهام.</td>
+            </tr>
+            <tr>
+                <td>قاعدة البيانات</td>
+                <td>PostgreSQL / SQLite</td>
+                <td>تخزين المشاريع، المهام، والتحديدات.</td>
+            </tr>
+        </table>
+
+        <div class="alert alert-info">
+            <strong>ملاحظة:</strong> المشروع مصمم بنظام "Mixins" مما يجعله مرناً جداً للتعديل، ولكن هذا يتطلب فهماً عميقاً لكيفية وراثة الكلاسات داخل Django.
+        </div>
+    </div>
+
+    <!-- Section: Security -->
+    <div id="security" class="section">
+        <h1>التحليل الأمني العميق (Security Deep Dive)</h1>
+        <p>تم فحص ملف <code>label_studio/core/settings/base.py</code> والملفات المرتبطة به، وتم استخراج الثغرات التالية:</p>
+
+        <div class="alert alert-danger">
+            <h3>1. ثغرة ALLOWED_HOSTS (حرجة)</h3>
+            <p>الكود الحالي يسمح بجميع الـ Hosts افتراضياً:</p>
+            <div class="code-block">
+                <div class="code-label">settings/base.py</div>
+                ALLOWED_HOSTS = get_env_list('ALLOWED_HOSTS', default=['*'])
+            </div>
+            <p><strong>الخطر:</strong> يسمح بهجمات <strong>Host Header Injection</strong>. المهاجم يمكنه خداع السيرفر لإنشاء روابط خبيثة (مثل روابط استعادة كلمة المرور) ترسل لبريد المستخدم ولكنها تشير لسيرفر المهاجم.</p>
+        </div>
+
+        <div class="alert alert-danger">
+            <h3>2. تعطيل حماية CSRF (خطير)</h3>
+            <p>يوجد Middleware مخصص لتعطيل الحماية:</p>
+            <div class="code-block">
+                <div class="code-label">core/middleware.py</div>
+                class DisableCSRF(MiddlewareMixin):<br>
+                &nbsp;&nbsp;def process_view(self, request, callback, *args, **kwargs):<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;setattr(request, '_dont_enforce_csrf_checks', True)
+            </div>
+            <p><strong>الخطر:</strong> هذا يفتح الباب لهجمات <strong>Cross-Site Request Forgery</strong>. إذا قام المستخدم بزيارة موقع خبيث وهو مسجل دخول في Label Studio، يمكن للموقع الخبيث إرسال طلبات (مثل حذف بيانات) دون علم المستخدم.</p>
+        </div>
+
+        <div class="alert alert-warning">
+            <h3>3. ثغرة CORS (Cross-Origin Resource Sharing)</h3>
+            <p>الإعداد الافتراضي يسمح للجميع:</p>
+            <div class="code-block">
+                <div class="code-label">settings/base.py</div>
+                CORS_ALLOW_ALL_ORIGINS = get_bool_env('CORS_ALLOW_ALL_ORIGINS', True)
+            </div>
+            <p><strong>الخطر:</strong> يسمح لأي موقع على الإنترنت بقراءة بيانات الـ API الخاصة بك إذا كان المستخدم مسجلاً للدخول.</p>
+        </div>
+
+        <div class="alert alert-danger">
+            <h3>4. حماية SSRF المعطلة</h3>
+            <p>الحماية من طلبات السيرفر المزيفة معطلة افتراضياً:</p>
+            <div class="code-block">
+                <div class="code-label">settings/base.py</div>
+                SSRF_PROTECTION_ENABLED = get_bool_env('SSRF_PROTECTION_ENABLED', False)
+            </div>
+            <p><strong>الخطر:</strong> يمكن للمهاجم استخدام خاصية "Import from URL" لجعل السيرفر يهاجم نفسه أو يكتشف خدمات داخلية في شبكتك الخاصة.</p>
+        </div>
+    </div>
+
+    <!-- Section: Performance -->
+    <div id="performance" class="section">
+        <h1>تحليل الأداء والضغط (Performance Analysis)</h1>
+        <p>لماذا يثقل النظام عند زيادة النقوش الفرعونية؟</p>
+
+        <div class="step-box">
+            <h3>أ. مشكلة الـ JSON Serialization</h3>
+            <p>يتم تخزين التحديدات في حقل <code>JSONField</code>. عند طلب صورة تحتوي على 500 نقش، يقوم Django بتحويل هذا الـ JSON الضخم إلى Object في كل مرة. هذا يستهلك الـ CPU بشكل هائل.</p>
+        </div>
+
+        <div class="step-box">
+            <h3>ب. مشكلة قاعدة البيانات (SQLite vs PostgreSQL)</h3>
+            <p>إذا كان العميل يستخدم SQLite، فإن أي عملية كتابة (Save Label) تقوم بقفل قاعدة البيانات بالكامل (Database Lock)، مما يمنع المستخدمين الآخرين من القراءة أو الكتابة حتى تنتهي العملية.</p>
+        </div>
+
+        <div class="step-box">
+            <h3>ج. رندر الواجهة الأمامية (Frontend Rendering)</h3>
+            <p>واجهة React تستخدم <code>Canvas</code> أو <code>SVG</code> لرسم التحديدات. مع زيادة عدد النقوش، تزداد العمليات الحسابية في المتصفح، مما يسبب "تهنيج" في جهاز المستخدم.</p>
+        </div>
+    </div>
+
+    <!-- Section: Roles -->
+    <div id="roles" class="section">
+        <h1>نظام الأدوار والصلاحيات (RBAC)</h1>
+        <p>النسخة المجتمعية تفتقر لنظام أدوار حقيقي. إليك التحليل الفني لكيفية إضافته:</p>
+
+        <h3>الموديلات المتأثرة:</h3>
+        <ul>
+            <li><code>User Model</code>: يحتاج لحقل <code>role</code>.</li>
+            <li><code>ProjectMember Model</code>: يحتاج لتحديد صلاحيات العضو داخل المشروع.</li>
+        </ul>
+
+        <h3>الأدوار المقترحة للعميل:</h3>
+        <table>
+            <tr>
+                <th>الدور</th>
+                <th>الصلاحيات</th>
+            </tr>
+            <tr>
+                <td>مدير (Admin)</td>
+                <td>كامل الصلاحيات (إنشاء مشاريع، حذف، إدارة مستخدمين).</td>
+            </tr>
+            <tr>
+                <td>مُراجع (Reviewer)</td>
+                <td>رؤية جميع الصور وتعديل التحديدات، لكن لا يمكنه حذف المشروع.</td>
+            </tr>
+            <tr>
+                <td>مُصنِّف (Annotator)</td>
+                <td>رؤية الصور المخصصة له فقط، ولا يمكنه رؤية عمل الآخرين.</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Section: Operation -->
+    <!-- <div id="operation" class="section">
+        <h1>دليل التشغيل الفني (Operation Guide)</h1>
+        <p>لتشغيل المشروع من الكود المصدري لضمان القدرة على التعديل:</p>
+
+        <div class="step-box">
+            <span class="step-number">1</span>
+            <strong>إعداد البيئة:</strong>
+            <pre>python3 -m venv env && source env/bin/activate</pre>
+        </div>
+
+        <div class="step-box">
+            <span class="step-number">2</span>
+            <strong>تثبيت الاعتماديات:</strong>
+            <pre>pip install -e .</pre>
+        </div>
+
+        <div class="step-box">
+            <span class="step-number">3</span>
+            <strong>تشغيل قاعدة البيانات (PostgreSQL):</strong>
+            <p>يجب ضبط متغيرات البيئة في ملف <code>.env</code>:</p>
+            <pre>DJANGO_DB=default<br>POSTGRE_NAME=labelstudio<br>POSTGRE_USER=postgres<br>POSTGRE_PASSWORD=password</pre>
+        </div>
+    </div> -->
+
+    <!-- Section: Modification
+    <div id="modification" class="section">
+        <h1>خارطة طريق التعديل (Modification Roadmap)</h1>
+        <p>أين تضع يدك في الكود لتنفيذ طلبات العميل؟</p>
+
+        <table>
+            <tr>
+                <th>المطلب</th>
+                <th>الملف</th>
+                <th>التعديل البرمجي</th>
+            </tr>
+            <tr>
+                <td>إضافة حقل الدور</td>
+                <td class="file-path">label_studio/users/models.py</td>
+                <td>إضافة <code>role = models.CharField(choices=ROLE_CHOICES)</code></td>
+            </tr>
+            <tr>
+                <td>عزل الصور</td>
+                <td class="file-path">label_studio/tasks/models.py</td>
+                <td>تعديل <code>TaskManager</code> لفلترة المهام بناءً على <code>request.user</code>.</td>
+            </tr>
+            <tr>
+                <td>إصلاح الحماية</td>
+                <td class="file-path">label_studio/core/settings/base.py</td>
+                <td>تغيير <code>ALLOWED_HOSTS</code> و <code>SSRF_PROTECTION_ENABLED</code>.</td>
+            </tr>
+            <tr>
+                <td>تحسين الأداء</td>
+                <td class="file-path">label_studio/tasks/api.py</td>
+                <td>استخدام <code>select_related</code> و <code>prefetch_related</code> في الـ Queryset.</td>
+            </tr>
+        </table>
+    </div> -->
+</div>
+
+<script>
+    function showSection(sectionId) {
+        // Hide all sections
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(s => s.classList.remove('active'));
+        
+        // Show target section
+        document.getElementById(sectionId).classList.add('active');
+        
+        // Update nav items
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.innerText.includes(document.getElementById(sectionId).querySelector('h1').innerText.split(' ')[0])) {
+                item.classList.add('active');
+            }
+        });
+        
+        // Special case for nav item text matching
+        navItems.forEach(item => item.classList.remove('active'));
+        const activeItem = Array.from(navItems).find(item => item.getAttribute('onclick').includes(sectionId));
+        if (activeItem) activeItem.classList.add('active');
+    }
+</script>
+
+</body>
+</html>
